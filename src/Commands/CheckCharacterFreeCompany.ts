@@ -1,6 +1,6 @@
 import {Command} from "../Handler/CommandList.ts";
 import {ApplicationCommandOptionType, Client, CommandInteraction} from "discord.js";
-import {GetLodestoneFreeCompany, RobustlyCheckLodestoneFreeCompany} from "../Helpers/LodestoneHelpers.ts";
+import {RobustlyCheckLodestoneFreeCompany} from "../Helpers/LodestoneHelpers.ts";
 
 export const CheckCharacterFreeCompany: Command = {
     name: "checkcharacterfreecompany",
@@ -17,7 +17,7 @@ export const CheckCharacterFreeCompany: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         let messageContent = interaction.options.get("message")!.value as string;
 
-        let content = "";
+        let content;
         try {
             let [firstName, lastName] = messageContent.split(" ");
 
