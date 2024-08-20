@@ -1,7 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-
 // Example Query In Browser
 // https://na.finalfantasyxiv.com/lodestone/character/?q=Art+Bayard&worldname=Carbuncle&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=
 const baseURL = "https://na.finalfantasyxiv.com/lodestone/character/?q=";
@@ -20,32 +19,36 @@ export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastN
         return "First Name or Last Name is null or empty";
     } else {
         try {
-            const webContent = await GetWebContent(firstName, lastName);
-
-            if (!webContent) {
+            const content = await GetWebContent(firstName, lastName);
+            if (!content) {
                 return "Error Getting Initial Web Content";
             } else {
-                let href = webContent('a.entry__link').first().attr('href');
-                if (!href) {
-                    return "Error Getting Character ID - No Characters were found";
+                let webContent = cheerio.load(content);
+                if (!webContent) {
+                    return "Error Getting Initial Web Content";
                 } else {
-                    let url = href.match(/\/lodestone\/character\/(\d+)\//);
-                    if (!url) {
-                        return "Error Getting Character URL - CSS Selectors For Character URL May Have Changed";
+                    let href = webContent('a.entry__link').first().attr('href');
+                    if (!href) {
+                        return "Error Getting Character ID - No Characters were found";
                     } else {
-                        let characterId = url[1];
-                        if (!characterId) {
-                            return "Error Parsing Character ID - Character URL May Have Changed";
+                        let url = href.match(/\/lodestone\/character\/(\d+)\//);
+                        if (!url) {
+                            return "Error Getting Character URL - CSS Selectors For Character URL May Have Changed";
                         } else {
-                            // Found Character ID - Meaning Player Name is Valid and Found
-                            // Now Get Free Company Name
-                            let freeCompany = webContent('a.entry__freecompany__link').first().find('span').text();
-                            if (!freeCompany) {
-                                // Character not in a Free Company or CSS Selector may have updated
-                                return "Character not in a free company or CSS Selector may have updated";
+                            let characterId = url[1];
+                            if (!characterId) {
+                                return "Error Parsing Character ID - Character URL May Have Changed";
                             } else {
-                                // Free Company Found
-                                return freeCompany;
+                                // Found Character ID - Meaning Player Name is Valid and Found
+                                // Now Get Free Company Name
+                                let freeCompany = webContent('a.entry__freecompany__link').first().find('span').text();
+                                if (!freeCompany) {
+                                    // Character not in a Free Company or CSS Selector may have updated
+                                    return "Character not in a free company or CSS Selector may have updated";
+                                } else {
+                                    // Free Company Found
+                                    return freeCompany;
+                                }
                             }
                         }
                     }

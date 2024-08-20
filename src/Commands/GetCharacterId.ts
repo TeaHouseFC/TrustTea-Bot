@@ -1,7 +1,6 @@
 import {CommandInteraction, Client, ApplicationCommandOptionType} from "discord.js";
 import {Command} from "../Handler/CommandList.ts";
-import axios from "axios";
-import {GetLodestoneCharacterId, GetLodestoneFreeCompany} from "../Helpers/LodestoneHelpers.ts";
+import {GetLodestoneCharacterId} from "../Helpers/LodestoneHelpers.ts";
 
 export const GetCharacterId: Command = {
     name: "getcharacterid",
@@ -20,7 +19,7 @@ export const GetCharacterId: Command = {
 
         // Default to Carbuncle Server as we only need to query the FCs server location
         let server = "Carbuncle";
-        let content = "";
+        let content;
         try {
             let [firstName, lastName] = messageContent.split(" ");
 
