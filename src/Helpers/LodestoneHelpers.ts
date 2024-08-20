@@ -21,11 +21,13 @@ export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastN
     } else {
         try {
             const content = await GetWebContent(firstName, lastName);
-
             if (!content) {
                 return "Error Getting Initial Web Content";
             } else {
-                let webContent = cheerio.load(content);
+            let webContent = cheerio.load(content);
+            if (!webContent) {
+                return "Error Getting Initial Web Content";
+            } else {
                 let href = webContent('a.entry__link').first().attr('href');
                 if (!href) {
                     return "Error Getting Character ID - No Characters were found";
