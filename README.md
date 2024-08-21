@@ -23,7 +23,7 @@ Running tests:
 bun run test
 ```
 
-Building and running the bot as a docker container:
+Building and running the bot through docker:
 ```bash
 docker build --pull -t imagename .
 docker run imagename
@@ -31,6 +31,7 @@ docker run imagename
 
 Running via docker compose (recommended)
 ```bash
+docker compose create
 docker compose up
 ```
 
