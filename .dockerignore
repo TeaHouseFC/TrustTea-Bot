@@ -1,0 +1,19 @@
+node_modules
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+Makefile
+helm-charts
+.editorconfig
+.idea
+coverage*
+## TODO - Find a better way to pass environmental variables to the container (Investigate Docker Compose Environment Variables)
+## .env file currently included in the build to be bundled in the container
+## Due to not currently having a better way to pass environmental variables to the container
+## Will find a better way later when implementing Database connections
+#.env
