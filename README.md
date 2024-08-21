@@ -12,14 +12,29 @@ To install dependencies:
 bun install
 ```
 
-To run:
+Running the bot locally:
 
 ```bash
-bun run index.ts
+bun run start
 ```
-Or
+Running tests:
+
 ```bash
-npm start
+bun run test
 ```
 
-This project was created using `bun init` in bun v1.1.21. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Building and running the bot as a docker container:
+```bash
+docker build --pull -t imagename .
+docker run imagename
+```
+
+Running via docker compose (recommended)
+```bash
+docker compose up
+```
+
+Checking running docker process
+```bash
+docker ps
+```
