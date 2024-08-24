@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FCMember {
+  Id Int @id @default(autoincrement())
+  DiscordUid Int @unique
+  DiscordUsername String
+  LodestoneId Int @unique
+  DateCreated DateTime @default(now())
+
+  // Relations
+  nameChanges NameChanges[]
+  lastLogins LastLogin[]
+
+}
+
+model NameChanges {
+  Id Int @id @default(autoincrement())
+  DiscordUid Int
+  FirstName String
+  LastName String
+  DateChanged DateTime @default(now())
+
+  FCMember FCMember @relation(fields: [DiscordUid], references: [DiscordUid])
+}
+
+model LastLogin {
+  Id Int @id @default(autoincrement())
+  DiscordUid Int
+  DaysSinceLastLogin Int
+  Past90DaysWithoutLogin Boolean
+  Past180DaysWithoutLogin Boolean
+  DateLastChecked DateTime
+  DateCreated DateTime @default(now())
+
+  FCMember FCMember @relation(fields: [DiscordUid], references: [DiscordUid])
+}

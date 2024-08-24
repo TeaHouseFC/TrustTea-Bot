@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "Tea"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
   trusttea-bot:
     build: .
     container_name: trusttea-bot
@@ -17,3 +30,8 @@ services:
       - "3000:3000"
     restart: unless-stopped
     entrypoint: ["bun", "run", "src/index.ts"]
+
+
+
+volumes:
+  postgres_data:
