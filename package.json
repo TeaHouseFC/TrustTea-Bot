@@ -20,6 +20,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "tests": "bun test",
-    "postgres-install": "sh EnvironmentHelpers/setup-postgres.sh"
+    "postgres-install:unix": "sh EnvironmentHelpers/setup-postgres.sh",
+    "postgres-install:windows": "powershell -File EnvironmentHelpers/setup-postgres.ps1"
   }
 }
