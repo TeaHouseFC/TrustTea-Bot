@@ -2,12 +2,14 @@
   "name": "trusttea-bot",
   "module": "src/index.ts",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prisma": "^5.18.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@prisma/client": "^5.18.0",
     "axios": "^1.7.3",
     "cheerio": "^1.0.0",
     "discord-api-types": "^0.37.93",
@@ -17,6 +19,8 @@
   },
   "scripts": {
     "start": "bun run src/index.ts",
-    "tests": "bun test"
+    "tests": "bun test",
+    "postgres-install:unix": "sh EnvironmentHelpers/setup-postgres.sh",
+    "postgres-install:windows": "powershell -File EnvironmentHelpers/setup-postgres.ps1"
   }
 }
