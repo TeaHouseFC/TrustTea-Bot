@@ -17,6 +17,7 @@
   },
   "scripts": {
     "start": "bun run src/index.ts",
-    "tests": "bun test"
+    "tests": "bun test",
+    "postgres-install": "sh EnvironmentHelpers/setup-postgres.sh"
   }
 }
