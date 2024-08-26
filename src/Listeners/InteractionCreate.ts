@@ -1,5 +1,5 @@
 import { CommandInteraction, Client, Interaction, ContextMenuCommandBuilder, ApplicationCommandType} from "discord.js";
-import { Commands } from "../Handler/CommandList";
+import {commands} from "../Handler/Command.ts";
 
 // Initialises the menu of commands to be displayed to user when right click or tapping on a user
 // To perform context specific actions
@@ -23,14 +23,18 @@ export default (client: Client): void => {
 // Handles the slash command by clicking the Array of commands to find the command that matches the interaction
 // Returns a message if the command is not found
 const HandleSlashCommand = async (client: Client, interaction: CommandInteraction): Promise<void> => {
-    const slashCommand = Commands.find(c => c.name === interaction.commandName);
+    let commandList = commands;
+    // Match interaction command to commandList
+    let slashCommand = commandList.find((command) => command.data.name === interaction.commandName);
+
     if (!slashCommand) {
-        // What to display to the user if the slash command isn't recognised/found
-        interaction.followUp({ content: "An error has occurred" });
+        console.log("No Command was found")
+        await interaction.reply({ content: "Command not found", ephemeral: true });
         return;
     }
 
-    await interaction.deferReply();
+
+    // await interaction.deferReply();
 
     slashCommand.run(client, interaction);
 };

@@ -13,9 +13,10 @@
     // Jawns
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "sourceMap": true,
 
     // Bundler mode
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
     "noEmit": true,
