@@ -1,13 +1,20 @@
 import {
     CommandInteraction,
-    ChatInputApplicationCommandData,
     Client,
-    SlashCommandBuilder,
-    PermissionResolvable
+     SlashCommandSubcommandsOnlyBuilder
 } from "discord.js";
-import banCommand from "../Commands/Utilities/BasicPing.ts";
+import {lodestoneCommand} from "../Commands/LodestoneInteractions/LodestoneCommands.ts";
+import {Ping} from "../Commands/Utilities/Ping.ts";
+import {ReloadCommands} from "../Commands/Utilities/ReloadCommands.ts";
 
 
-export const commands = [
-    banCommand
+
+export const CommandsList = [
+    lodestoneCommand,
+    Ping,
+    ReloadCommands
 ]
+export interface Command {
+    data: SlashCommandSubcommandsOnlyBuilder
+    execute: (client: Client, interaction: CommandInteraction) => void;
+}

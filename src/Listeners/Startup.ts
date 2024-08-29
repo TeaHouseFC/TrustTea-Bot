@@ -1,5 +1,5 @@
 import {Client, REST, Routes} from "discord.js";
-import {commands} from "../Handler/Command.ts";
+import {CommandsList} from "../Handler/Command.ts";
 const dotenv = require("dotenv").config();
 
 export async function Startup(client : Client) {
@@ -8,31 +8,29 @@ export async function Startup(client : Client) {
 
     if (token === null || token === undefined) {
         throw Error("TOKEN and client environment variables are required.");
-    } else {
-        if (typeof token !== 'string') {
-            throw Error("TOKEN needs to be of type string");
-        } else {
-            const rest = new REST({version: '10'}).setToken(token);
-            let commandsList = commands.map(command => command.data);
-            if (client.application === null || client.application === undefined) {
-                throw Error("No Client Found");
-            } else {
-                try {
-                    // Easy Way
-                    // await client.application.commands.set(commandsList);
-                    // Globally
-                    await rest.put(Routes.applicationCommands("1271062992192147526"), {body: commandsList})
-                    // Specific Guild
-                    // await rest.put(Routes.applicationGuildCommands(process.env.DiscordClient, process.env.DiscordAdminGuild), {body: commandsList})
-
-                } catch (err) {
-                    let error = JSON.stringify(err, null, 2);
-                    throw Error(error);
-                }
-            }
-
-        }
+    }
+    if (client.application === null || client.application === undefined) {
+        throw Error("No Client Found");
     }
 
+    const rest = new REST({version: '10'}).setToken(token);
+    let commandsList = CommandsList.map(command => command.data);
+
+    if (client.user) {
+        client.user.setActivity(`with ${client.guilds.cache.size} guild(s)`);
+    }
+
+    try {
+        await client.application.commands.set(commandsList);
+    } catch (err) {
+        let error = JSON.stringify(err, null, 2);
+        throw Error(error);
+    }
 }
+
+export async function EstablishDatabaseConnection() {
+    // Establish database connection here
+}
+
+
 

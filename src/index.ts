@@ -22,19 +22,15 @@ if (discordToken === undefined || null) {
             intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences]
         });
 
-
-
-        // Once everything is loaded, attempt to login to Discord with provided token
+        // Once everything is loaded, attempt to login to Discord with provided token and complete startup actions
         client.login(discordToken).then(() => {
-            // Execute the Ready Listener to tell if bot is online and register bot information
             Startup(client);
-            // ReadyListener(client);
-            // Execute the InteractionCreate Listener to handle slash commands
             InteractionCreate(client);
         });
 
         // Once the client "Discord Bot" is ready to receive commands, log the bot's tag to the console
         client.once(Events.ClientReady, readyClient => {
+
             console.log(`Ready! Logged in as ${readyClient.user.tag}`);
         });
     } catch (err) {
