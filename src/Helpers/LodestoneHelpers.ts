@@ -10,111 +10,108 @@ const endQueryURL = `&worldname=${world}&classjob=&race_tribe=&blog_lang=ja&blog
 let nameParameter = "";
 
 
+export interface SingleValueQuery {
+    success: boolean;
+    value: string;
+}
+
+
 
 // Robustly Checks the Lodestone for character Free Company
 // Returns Message to cover every scenario
-export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<string> => {
-
+export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
-        return "First Name or Last Name is null or empty";
-    } else {
-        try {
-            const content = await GetWebContent(firstName, lastName);
-            if (!content) {
-                return "Error Getting Initial Web Content";
-            } else {
-                let webContent = cheerio.load(content);
-                if (!webContent) {
-                    return "Error Getting Initial Web Content";
-                } else {
-                    let href = webContent('a.entry__link').first().attr('href');
-                    if (!href) {
-                        return "Error Getting Character ID - No Characters were found";
-                    } else {
-                        let url = href.match(/\/lodestone\/character\/(\d+)\//);
-                        if (!url) {
-                            return "Error Getting Character URL - CSS Selectors For Character URL May Have Changed";
-                        } else {
-                            let characterId = url[1];
-                            if (!characterId) {
-                                return "Error Parsing Character ID - Character URL May Have Changed";
-                            } else {
-                                // Found Character ID - Meaning Player Name is Valid and Found
-                                // Now Get Free Company Name
-                                let freeCompany = webContent('a.entry__freecompany__link').first().find('span').text();
-                                if (!freeCompany) {
-                                    // Character not in a Free Company or CSS Selector may have updated
-                                    return "Character not in a free company or CSS Selector may have updated";
-                                } else {
-                                    // Free Company Found
-                                    return freeCompany;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            console.error("Error getting Free Company:", err);
-            return `Error: ${err}`;
+        return { success: false, value: "First Name or Last Name is null or empty" };
+    }
+
+    try {
+        const content = await GetWebContent(firstName, lastName);
+        if (!content) {
+            return { success: false, value: "Error Getting Initial Web Content" };
         }
+
+        const webContent = cheerio.load(content);
+        const href = webContent('a.entry__link').first().attr('href');
+        if (!href) {
+            return { success: false, value: "Error Getting Character ID - No Characters were found" };
+        }
+
+        const url = href.match(/\/lodestone\/character\/(\d+)\//);
+        if (!url) {
+            return { success: false, value: "Error Getting Character URL - CSS Selectors For Character URL May Have Changed" };
+        }
+
+        const characterId = url[1];
+        if (!characterId) {
+            return { success: false, value: "Error Parsing Character ID - Character URL May Have Changed" };
+        }
+
+        const freeCompany = webContent('a.entry__freecompany__link').first().find('span').text();
+        if (!freeCompany) {
+            return { success: false, value: "Character not in a free company or CSS Selector may have updated" };
+        }
+
+        return { success: true, value: freeCompany };
+    } catch (err) {
+        console.error("Error getting Free Company:", err);
+        return { success: false, value: `Error: ${err}` };
     }
 }
 
 // Primitively returns the Character Id
 // Useful for checking basic CSS Selectors
-export const GetLodestoneCharacterId = async (firstName: string, lastName: string): Promise<string> => {
-
+export const GetLodestoneCharacterId = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
-        return "First Name or Last Name is null or empty";
-    } else {
-        try {
-            const content = await GetWebContent(firstName, lastName);
-            if (content) {
-                const webContent = cheerio.load(content);
-                const href = webContent('a.entry__link').first().attr('href');
-                if (href) {
-                    const characterId = href.match(/\/lodestone\/character\/(\d+)\//);
-                    if (characterId) {
-                        return characterId[1];
-                    } else {
-                        return "Error Getting Character ID";
-                    }
-                } else {
-                    return "No Character Found corresponding to this name";
-                }
-            } else {
-                return "Unable to get web content";
-            }
-        } catch (err) {
-            console.error("Error getting Free Company:", err);
-            return `Error: ${err}`;
-        }
+        return { success: false, value: "First Name or Last Name is null or empty" };
     }
 
+    try {
+        const content = await GetWebContent(firstName, lastName);
+        if (!content) {
+            return { success: false, value: "Unable to get web content" };
+        }
+
+        const webContent = cheerio.load(content);
+        const href = webContent('a.entry__link').first().attr('href');
+        if (!href) {
+            return { success: false, value: "No Character found with this name" };
+        }
+
+        const characterId = href.match(/\/lodestone\/character\/(\d+)\//);
+        if (!characterId) {
+            return { success: false, value: "Error Getting Character ID" };
+        }
+
+        return { success: true, value: characterId[1] };
+    } catch (err) {
+        console.error("Error getting Free Company:", err);
+        return { success: false, value: `Error: ${err}` };
+    }
 }
 
 // Primitively returns the Free Company Name
 // Useful for checking basic CSS Selectors
-export const GetLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<string> => {
-
+export const GetLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
-        return "First Name or Last Name is null or empty";
-    } else {
-        try {
-            const content = await GetWebContent(firstName, lastName);
-            if (content) {
-                const webContent = cheerio.load(content);
-                const spanText = webContent('a.entry__freecompany__link').first().find('span').text();
-                return spanText || "Character not found or not in a Free Company";
-            } else {
-                return "Error getting web content - Lodestone Community Finder CSS May Have Updated";
-            }
+        return { success: false, value: "First Name or Last Name is null or empty" };
+    }
+
+    try {
+        const content = await GetWebContent(firstName, lastName);
+        if (!content) {
+            return { success: false, value: "Error getting web content - Lodestone Community Finder CSS may have updated" };
         }
-        catch (err) {
-            console.error("Error getting Free Company:", err);
-            return "Error";
+
+        const webContent = cheerio.load(content);
+        const spanText = webContent('a.entry__freecompany__link').first().find('span').text();
+        if (!spanText) {
+            return { success: false, value: "Character not found or not in a Free Company" };
         }
+
+        return { success: true, value: spanText };
+    } catch (err) {
+        console.error("Error getting Free Company:", err);
+        return { success: false, value: `Error: ${err}` };
     }
 }
 

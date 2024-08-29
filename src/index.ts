@@ -3,7 +3,7 @@ import InteractionCreate from "./Listeners/InteractionCreate.ts";
 const dotenv = require("dotenv").config();
 import {Client, ClientOptions, Events, GatewayIntentBits} from "discord.js";
 import { APIUser} from 'discord-api-types/v10';
-import ReadyListener from "./Listeners/Ready.ts";
+import {Startup} from "./Listeners/Startup.ts";
 
 
 // Loads the DISCORD_TOKEN from a .env file located in the root project directory outside /src
@@ -22,16 +22,15 @@ if (discordToken === undefined || null) {
             intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences]
         });
 
-        // Execute the Ready Listener to tell if bot is online and register bot information
-        ReadyListener(client);
-        // Execute the InteractionCreate Listener to handle slash commands
-        InteractionCreate(client);
-
-        // Once everything is loaded, attempt to login to Discord with provided token
-        client.login(discordToken);
+        // Once everything is loaded, attempt to login to Discord with provided token and complete startup actions
+        client.login(discordToken).then(() => {
+            Startup(client);
+            InteractionCreate(client);
+        });
 
         // Once the client "Discord Bot" is ready to receive commands, log the bot's tag to the console
         client.once(Events.ClientReady, readyClient => {
+
             console.log(`Ready! Logged in as ${readyClient.user.tag}`);
         });
     } catch (err) {
