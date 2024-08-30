@@ -56,3 +56,12 @@ if ! bunx prisma migrate deploy; then
 fi
 
 echo "Prisma migration was successful and the database is ready to use."
+
+# Generate Prisma client
+echo "Generating Prisma client..."
+if ! bunx prisma generate; then
+  echo "Error: Prisma client generation failed."
+  exit 1
+fi
+
+echo "Prisma client generated successfully."

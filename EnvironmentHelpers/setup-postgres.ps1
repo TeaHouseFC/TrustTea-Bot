@@ -55,3 +55,12 @@ if (-not (bunx prisma migrate deploy)) {
 }
 
 Write-Host "Prisma migration was successful and the database is ready to use."
+
+# Generate Prisma client
+Write-Host "Generating Prisma client..."
+if (-not (bunx prisma generate)) {
+    Write-Host "Error: Prisma client generation failed."
+    exit 1
+}
+
+Write-Host "Prisma client generated successfully."
