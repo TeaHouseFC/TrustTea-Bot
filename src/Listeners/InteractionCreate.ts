@@ -18,13 +18,31 @@ export default (client: Client): void => {
 };
 
 const HandleSlashCommand = async (client: Client, interaction: CommandInteraction): Promise<void> => {
-    const slashCommand = CommandsList.find(command => command.data.name === interaction.commandName);
+    let parentCommand = CommandsList.find(command => command.data.name === interaction.commandName);
 
-    if (!slashCommand) {
+    if (!parentCommand) {
         console.log("No Command was found");
         await interaction.reply({ content: "Command not found", ephemeral: true });
         return;
     }
-    // await interaction.deferReply();
-    slashCommand.execute(client, interaction);
+
+    let subCommandName = interaction.options.data[0].name;
+    let subCommand = parentCommand.subcommands.find(sub => sub.data.name === subCommandName);
+
+    if (!subCommand) {
+        console.log("No Subcommand was found");
+        await interaction.reply({ content: "Subcommand not found", ephemeral: true });
+        return;
+    }
+
+    // Get Id of person who executed the command and the guild
+    // Placeholder for now
+    let executor: {userId: string, guildId: string} = {userId: "0" , guildId: "0"};
+
+    if (interaction.user.id && interaction.guildId) {
+        executor = {userId: interaction.user.id, guildId: interaction.guildId};
+    }
+
+    // Execute the subcommand/
+    subCommand.execute(client, interaction, executor);
 };

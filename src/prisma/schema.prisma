@@ -19,14 +19,13 @@ model FCMember {
   DiscordUsername String
   LodestoneId Int @unique
   DateCreated DateTime @default(now())
+  AccountMatched Boolean
 
   // Relations
-  nameChanges NameChanges[]
-  lastLogins LastLogin[]
-
+  nameChanges NameHistory[]
 }
 
-model NameChanges {
+model NameHistory {
   Id Int @id @default(autoincrement())
   DiscordUid Int
   FirstName String
@@ -36,14 +35,3 @@ model NameChanges {
   FCMember FCMember @relation(fields: [DiscordUid], references: [DiscordUid])
 }
 
-model LastLogin {
-  Id Int @id @default(autoincrement())
-  DiscordUid Int
-  DaysSinceLastLogin Int
-  Past90DaysWithoutLogin Boolean
-  Past180DaysWithoutLogin Boolean
-  DateLastChecked DateTime
-  DateCreated DateTime @default(now())
-
-  FCMember FCMember @relation(fields: [DiscordUid], references: [DiscordUid])
-}

@@ -1,13 +1,14 @@
-import {Client, CommandInteraction, SlashCommandBuilder} from "discord.js";
-import {Command} from "../../Handler/Command.ts";
+import {Client, CommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder} from "discord.js";
+
 import {ReloadGuildCommands} from "../../Helpers/ReloadCommands.ts";
+import {Executor, PrimaryCommand, SubCommand} from "../../Handler/Command.ts";
 
-export const ReloadCommands: Command = {
-    data: new SlashCommandBuilder()
+export const ReloadCommands: SubCommand = {
+    data: new SlashCommandSubcommandBuilder()
         .setName('reloadcommands')
-        .setDescription('Reloads all commands in the guild specifically'),
+        .setDescription('Reloads all commands in the guild the command was run'),
 
-    execute : async (client: Client, interaction: CommandInteraction) => {
+    execute : async (client: Client, interaction: CommandInteraction, executor? :Executor) => {
         let content = "";
         let guildId = ""
         if (!interaction.guild) {

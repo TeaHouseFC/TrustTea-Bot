@@ -1,20 +1,36 @@
 import {
     CommandInteraction,
     Client,
-     SlashCommandSubcommandsOnlyBuilder
+    SlashCommandSubcommandsOnlyBuilder,
+    SlashCommandSubcommandBuilder
 } from "discord.js";
-import {lodestoneCommand} from "../Commands/LodestoneInteractions/LodestoneCommands.ts";
-import {Ping} from "../Commands/Utilities/Ping.ts";
-import {ReloadCommands} from "../Commands/Utilities/ReloadCommands.ts";
-
+import {CheckCharacterCommands} from "../Commands/LodestoneCharacterInteractions/Index.ts";
+import {BotUtilityCommands} from "../Commands/Utilities/Index.ts";
+import {LodestoneFCUtilityCommands} from "../Commands/LodestoneFCUtilities/Index.ts";
 
 
 export const CommandsList = [
-    lodestoneCommand,
-    Ping,
-    ReloadCommands
+    CheckCharacterCommands,
+    BotUtilityCommands,
+    LodestoneFCUtilityCommands
 ]
-export interface Command {
+export interface CommandWithSubCommands {
     data: SlashCommandSubcommandsOnlyBuilder
     execute: (client: Client, interaction: CommandInteraction) => void;
+}
+
+export interface Executor {
+    guildId: string;
+    userId: string;
+}
+
+export interface PrimaryCommand {
+    data: SlashCommandSubcommandsOnlyBuilder;
+    subcommands: SubCommand[];
+    executor?: Executor;
+}
+
+export interface SubCommand {
+    data: SlashCommandSubcommandBuilder
+    execute: (client: Client, interaction: CommandInteraction, executor?: Executor) => void;
 }

@@ -1,13 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-
-// Example Query In Browser
-// https://na.finalfantasyxiv.com/lodestone/character/?q=Art+Bayard&worldname=Carbuncle&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=
-const baseURL = "https://na.finalfantasyxiv.com/lodestone/character/?q=";
-// World Parameter is currently hardcoded to Carbuncle as we only need to query the FCs server location
-let world = "Carbuncle"
-const endQueryURL = `&worldname=${world}&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=`;
-let nameParameter = "";
+import {CheerioAPI} from "cheerio";
 
 
 export interface SingleValueQuery {
@@ -15,17 +8,45 @@ export interface SingleValueQuery {
     value: string;
 }
 
+export interface FCMemberList {
+    success: boolean;
+    error: string;
+    members: FCMember[];
+}
+
+export interface FCMember {
+    firstName: string;
+    lastName: string;
+    characterId: number;
+}
 
 
-// Robustly Checks the Lodestone for character Free Company
-// Returns Message to cover every scenario
-export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
+const GenerateCharacterSearchQueryURL = (firstName: string, lastName: string, world: string): string => {
+    // Example Query In Browser
+    // https://na.finalfantasyxiv.com/lodestone/character/?q=Art+Bayard&worldname=Carbuncle&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=
+    const baseCharacterSearchURL = "https://na.finalfantasyxiv.com/lodestone/character/?q=";
+    const endQueryURL = `&worldname=${world}&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=`;
+    return `${baseCharacterSearchURL}${firstName}+${lastName}${endQueryURL}`;
+}
+
+const GenerateFreeCompanySearchQueryURL = (freeCompanyId: string): string => {
+    // Example Query In Browser
+    // https://na.finalfantasyxiv.com/lodestone/freecompany/9229705223830889096/member/?page=1
+    return `https://na.finalfantasyxiv.com/lodestone/freecompany/${freeCompanyId}/member/?page=`;
+}
+
+
+
+// Checks the Lodestone for character Free Company using the character search page
+export const GetLodestoneFreeCompany = async (firstName: string, lastName: string, world: string): Promise<SingleValueQuery> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
         return { success: false, value: "First Name or Last Name is null or empty" };
     }
 
     try {
-        const content = await GetWebContent(firstName, lastName);
+        let queryURL = GenerateCharacterSearchQueryURL(firstName, lastName, world);
+
+        const content = await GetLodestoneWebPageContent(queryURL);
         if (!content) {
             return { success: false, value: "Error Getting Initial Web Content" };
         }
@@ -33,15 +54,15 @@ export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastN
         const webContent = cheerio.load(content);
         const href = webContent('a.entry__link').first().attr('href');
         if (!href) {
-            return { success: false, value: "Error Getting Character ID - No Characters were found" };
+            return { success: false, value: "No Character found with this name on the specified world" };
         }
 
-        const url = href.match(/\/lodestone\/character\/(\d+)\//);
-        if (!url) {
+        const characterURL = href.match(/\/lodestone\/character\/(\d+)\//);
+        if (!characterURL) {
             return { success: false, value: "Error Getting Character URL - CSS Selectors For Character URL May Have Changed" };
         }
 
-        const characterId = url[1];
+        const characterId = characterURL[1];
         if (!characterId) {
             return { success: false, value: "Error Parsing Character ID - Character URL May Have Changed" };
         }
@@ -58,15 +79,18 @@ export const RobustlyCheckLodestoneFreeCompany = async (firstName: string, lastN
     }
 }
 
-// Primitively returns the Character Id
+// Checks the Lodestone for character Id using the character search page
 // Useful for checking basic CSS Selectors
-export const GetLodestoneCharacterId = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
+export const GetLodestoneCharacterId = async (firstName: string, lastName: string, world: string): Promise<SingleValueQuery> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
         return { success: false, value: "First Name or Last Name is null or empty" };
     }
 
     try {
-        const content = await GetWebContent(firstName, lastName);
+        let queryURL = GenerateCharacterSearchQueryURL(firstName, lastName, world);
+
+        const content = await GetLodestoneWebPageContent(queryURL);
+
         if (!content) {
             return { success: false, value: "Unable to get web content" };
         }
@@ -74,7 +98,7 @@ export const GetLodestoneCharacterId = async (firstName: string, lastName: strin
         const webContent = cheerio.load(content);
         const href = webContent('a.entry__link').first().attr('href');
         if (!href) {
-            return { success: false, value: "No Character found with this name" };
+            return { success: false, value: "No Character found with this name on the specified world" };
         }
 
         const characterId = href.match(/\/lodestone\/character\/(\d+)\//);
@@ -89,45 +113,115 @@ export const GetLodestoneCharacterId = async (firstName: string, lastName: strin
     }
 }
 
-// Primitively returns the Free Company Name
-// Useful for checking basic CSS Selectors
-export const GetLodestoneFreeCompany = async (firstName: string, lastName: string): Promise<SingleValueQuery> => {
-    if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
-        return { success: false, value: "First Name or Last Name is null or empty" };
+
+export const GetLodestoneFreeCompanyMembers = async (fcid: string): Promise<FCMemberList> => {
+    let memberList : FCMember[] = [];
+
+    let initialURL = GenerateFreeCompanySearchQueryURL(fcid);
+    // Get Initial Page 1 Content
+    const content = await GetLodestoneWebPageContent(initialURL);
+    const webContent = cheerio.load(content);
+
+    const totalPageCount = await CalculateTotalMemberPageCount(webContent);
+    if (totalPageCount === 0) {
+       return { success: false, error: "Error getting FC Members page count", members: [] };
+    }
+
+    // Get Members from Page 1
+    let currentPage = 1;
+
+    while (currentPage <= totalPageCount) {
+        let urlQuery = `${initialURL}${currentPage}`;
+        let members = await GetMembersFromFreeCompanyProfile(urlQuery);
+        memberList.push(...members);
+        currentPage++;
+    }
+
+
+    return { success: true, error: "", members: memberList };
+}
+
+
+
+const GetMembersFromFreeCompanyProfile = async (url: string): Promise<FCMember[]> => {
+    if (!url) {
+        return [];
     }
 
     try {
-        const content = await GetWebContent(firstName, lastName);
-        if (!content) {
-            return { success: false, value: "Error getting web content - Lodestone Community Finder CSS may have updated" };
-        }
-
+        const content = await GetLodestoneWebPageContent(url);
         const webContent = cheerio.load(content);
-        const spanText = webContent('a.entry__freecompany__link').first().find('span').text();
-        if (!spanText) {
-            return { success: false, value: "Character not found or not in a Free Company" };
-        }
 
-        return { success: true, value: spanText };
+        let members: FCMember[] = [];
+        webContent('a.entry__bg').each((index, element) => {
+            let idHref = webContent(element).attr('href');
+
+            if (!idHref) {
+                console.error("Error getting ID Href");
+                return;
+            } else {
+            }
+
+            let fullName = webContent(element).find('.entry__name').text();
+            let firstName = fullName.split(' ')[0];
+            let lastName = fullName.split(' ')[1];
+            let characterIdMatch = idHref.match(/\/lodestone\/character\/(\d+)\//);
+            let characterId = characterIdMatch ? characterIdMatch[1] : null;
+
+            if (characterId) {
+                let member: FCMember = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    characterId: parseInt(characterId, 10)
+                }
+                members.push(member);
+            }
+        });
+
+        return members;
     } catch (err) {
-        console.error("Error getting Free Company:", err);
-        return { success: false, value: `Error: ${err}` };
+        return [];
     }
 }
 
-// Used for Getting Based Web Content From Lodestone for Parsing
-const GetWebContent = async (firstName: string, lastName: string) => {
-        nameParameter = `${firstName}+${lastName}`;
-        const fullURL = `${baseURL}${nameParameter}${endQueryURL}`;
-            try {
-                const response = await axios.get(fullURL);
-                return response.data;
-            } catch (error) {
-                console.error("Error fetching web content:", error);
-                return null;
-            }
+
+const CalculateTotalMemberPageCount = async (webContent: CheerioAPI): Promise<number> => {
+    if (!webContent) {
+        return 0;
+    }
+
+    try {
+        let pageCountContent = webContent('li.btn__pager__current').text();
+
+        // Use a regular expression to find the last number in the text
+        const pageCount = pageCountContent.match(/Page \d+ of (\d+)/);
+        if (pageCount && pageCount[1]) {
+            return parseInt(pageCount[1], 10);
+        } else {
+            return 0;
+        }
+    } catch (err) {
+        return 0;
+    }
+}
+
+const GetLodestoneWebPageContent = async (url: string) => {
+
+    if (!url) {
+        return null;
+    }
+
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (err) {
+        console.error("Error fetching web content:", err);
+        return null;
+    }
 }
 
 const isNullOrEmpty = (value: string): Promise<boolean>  => {
     return Promise.resolve(value === null || value === undefined || value === '');
 }
+
+
