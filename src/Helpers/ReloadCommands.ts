@@ -7,7 +7,7 @@ export interface ReloadResult {
     error: string;
 }
 
-
+// WIP
 export async function ReloadGuildCommands(client: Client, guildId: string): Promise<ReloadResult> {
 
     let discordToken = process.env.DISCORD_TOKEN;

@@ -1,4 +1,4 @@
-import {CommandWithSubCommands, PrimaryCommand} from "../../Handler/Command.ts";
+import {PrimaryCommand} from "../../Handler/Command.ts";
 import {SlashCommandBuilder} from "discord.js";
 import {GetCharacterFreeCompany} from "./GetCharacterFreeCompany.ts";
 import {GetCharacterId} from "./GetCharacterId.ts";

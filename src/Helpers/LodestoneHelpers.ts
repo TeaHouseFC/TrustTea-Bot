@@ -1,25 +1,9 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import {CheerioAPI} from "cheerio";
+import {LodestoneFCMember, LodestoneFCMemberList, ServiceResult} from "../Types/GenericInterfaces.ts";
 
-
-export interface SingleValueQuery {
-    success: boolean;
-    value: string;
-}
-
-export interface FCMemberList {
-    success: boolean;
-    error: string;
-    members: FCMember[];
-}
-
-export interface FCMember {
-    firstName: string;
-    lastName: string;
-    characterId: number;
-}
-
+// Responsible for interactions directly with the lodestone
 
 const GenerateCharacterSearchQueryURL = (firstName: string, lastName: string, world: string): string => {
     // Example Query In Browser
@@ -36,9 +20,8 @@ const GenerateFreeCompanySearchQueryURL = (freeCompanyId: string): string => {
 }
 
 
-
 // Checks the Lodestone for character Free Company using the character search page
-export const GetLodestoneFreeCompany = async (firstName: string, lastName: string, world: string): Promise<SingleValueQuery> => {
+export const GetLodestoneFreeCompany = async (firstName: string, lastName: string, world: string): Promise<ServiceResult> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
         return { success: false, value: "First Name or Last Name is null or empty" };
     }
@@ -81,7 +64,7 @@ export const GetLodestoneFreeCompany = async (firstName: string, lastName: strin
 
 // Checks the Lodestone for character Id using the character search page
 // Useful for checking basic CSS Selectors
-export const GetLodestoneCharacterId = async (firstName: string, lastName: string, world: string): Promise<SingleValueQuery> => {
+export const GetLodestoneCharacterId = async (firstName: string, lastName: string, world: string): Promise<ServiceResult> => {
     if (await isNullOrEmpty(firstName) || await isNullOrEmpty(lastName)) {
         return { success: false, value: "First Name or Last Name is null or empty" };
     }
@@ -113,9 +96,9 @@ export const GetLodestoneCharacterId = async (firstName: string, lastName: strin
     }
 }
 
-
-export const GetLodestoneFreeCompanyMembers = async (fcid: string): Promise<FCMemberList> => {
-    let memberList : FCMember[] = [];
+// Gets List of Members within the Free Company
+export const GetLodestoneFreeCompanyMembers = async (fcid: string): Promise<LodestoneFCMemberList> => {
+    let memberList : LodestoneFCMember[] = [];
 
     let initialURL = GenerateFreeCompanySearchQueryURL(fcid);
     // Get Initial Page 1 Content
@@ -137,13 +120,12 @@ export const GetLodestoneFreeCompanyMembers = async (fcid: string): Promise<FCMe
         currentPage++;
     }
 
-
     return { success: true, error: "", members: memberList };
 }
 
 
-
-const GetMembersFromFreeCompanyProfile = async (url: string): Promise<FCMember[]> => {
+// Responsible for grabbing members from a specific Page on the Members Tab of the Free Company
+const GetMembersFromFreeCompanyProfile = async (url: string): Promise<LodestoneFCMember[]> => {
     if (!url) {
         return [];
     }
@@ -152,7 +134,7 @@ const GetMembersFromFreeCompanyProfile = async (url: string): Promise<FCMember[]
         const content = await GetLodestoneWebPageContent(url);
         const webContent = cheerio.load(content);
 
-        let members: FCMember[] = [];
+        let members: LodestoneFCMember[] = [];
         webContent('a.entry__bg').each((index, element) => {
             let idHref = webContent(element).attr('href');
 
@@ -169,10 +151,10 @@ const GetMembersFromFreeCompanyProfile = async (url: string): Promise<FCMember[]
             let characterId = characterIdMatch ? characterIdMatch[1] : null;
 
             if (characterId) {
-                let member: FCMember = {
+                let member: LodestoneFCMember = {
                     firstName: firstName,
                     lastName: lastName,
-                    characterId: parseInt(characterId, 10)
+                    characterId: characterId
                 }
                 members.push(member);
             }
@@ -184,7 +166,7 @@ const GetMembersFromFreeCompanyProfile = async (url: string): Promise<FCMember[]
     }
 }
 
-
+// Gets the total count of pages of members in Free Company Members Page
 const CalculateTotalMemberPageCount = async (webContent: CheerioAPI): Promise<number> => {
     if (!webContent) {
         return 0;
@@ -205,6 +187,7 @@ const CalculateTotalMemberPageCount = async (webContent: CheerioAPI): Promise<nu
     }
 }
 
+// Get Web Content From Lodestone Site
 const GetLodestoneWebPageContent = async (url: string) => {
 
     if (!url) {
