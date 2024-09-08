@@ -1,7 +1,6 @@
-import {Client, CommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder} from "discord.js";
-
+import {Client, CommandInteraction,SlashCommandSubcommandBuilder} from "discord.js";
 import {ReloadGuildCommands} from "../../Helpers/ReloadCommands.ts";
-import {Executor, PrimaryCommand, SubCommand} from "../../Handler/Command.ts";
+import {Executor, SubCommand} from "../../Handler/Command.ts";
 
 export const ReloadCommands: SubCommand = {
     data: new SlashCommandSubcommandBuilder()

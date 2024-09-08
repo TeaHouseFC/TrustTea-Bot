@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "FCGuildServer" ALTER COLUMN "FreeCompanyId" SET DATA TYPE BIGINT;
+
+-- AlterTable
+ALTER TABLE "FCMember" ALTER COLUMN "LodestoneId" SET DATA TYPE BIGINT;

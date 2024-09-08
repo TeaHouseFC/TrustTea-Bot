@@ -14,24 +14,52 @@ datasource db {
 }
 
 model FCMember {
-  Id Int @id @default(autoincrement())
-  DiscordUid Int @unique
+  Id              Int      @id @default(autoincrement())
+  DiscordUid      String   @unique
   DiscordUsername String
-  LodestoneId Int @unique
-  DateCreated DateTime @default(now())
-  AccountMatched Boolean
-
+  LodestoneId     String      @unique
+  DateCreated     DateTime @default(now())
+  AccountMatched  Boolean
+  DiscordGuildUid String
   // Relations
-  nameChanges NameHistory[]
+  nameChanges   NameHistory[]
+  FCGuildServer   FCGuildServer? @relation(fields: [DiscordGuildUid], references: [DiscordGuildUid])
+
 }
 
 model NameHistory {
-  Id Int @id @default(autoincrement())
-  DiscordUid Int
-  FirstName String
-  LastName String
+  Id          Int      @id @default(autoincrement())
+  DiscordUid  String
+  FirstName   String
+  LastName    String
   DateChanged DateTime @default(now())
 
   FCMember FCMember @relation(fields: [DiscordUid], references: [DiscordUid])
 }
 
+model FCGuildServer {
+  Id              Int      @id @default(autoincrement())
+  DiscordGuildUid String   @unique
+  FreeCompanyId   String   @unique
+  DateCreated     DateTime @default(now())
+
+  // Relations
+  members         FCMember[] // List of FCMember records
+  GuildAdminRole  FCGuildRole[]
+}
+
+model FCGuildRole {
+  Id              Int      @id @default(autoincrement())
+  RoleId          String   @unique
+  DiscordGuildUid String
+  DateCreated     DateTime @default(now())
+  RoleType        Role
+
+  // Relations
+  FCGuildServer FCGuildServer @relation(fields: [DiscordGuildUid], references: [DiscordGuildUid])
+}
+
+enum Role {
+  FCMEMBER
+  FCADMIN
+}

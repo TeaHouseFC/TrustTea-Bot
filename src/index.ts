@@ -4,6 +4,7 @@ const dotenv = require("dotenv").config();
 import {Client, Events, GatewayIntentBits} from "discord.js";
 import {Startup} from "./Listeners/Startup.ts";
 import { PrismaClient} from "@prisma/client";
+import GuildMemberUpdate from "./Listeners/GuildMemberUpdate.ts";
 
 const requiredEnvs = [
     'DISCORD_TOKEN',
@@ -19,8 +20,8 @@ async function InitialiseBot() {
     let retries = 3;
     while (retries > 0) {
         try {
-            await prisma.$connect().then(() => {console.log("Database connected successfully")});
-            console.log("Database connected successfully");
+            await prisma.$connect();
+            console.log("Connected to database");
             break;
         } catch (err) {
             console.log("Error connecting to database: ", err);
@@ -45,6 +46,7 @@ async function InitialiseBot() {
         await client.login(process.env.DISCORD_TOKEN);
         Startup(client);
         InteractionCreate(client);
+        GuildMemberUpdate(client);
 
         // Once the client "Discord Bot" is ready to receive commands, log the bot's tag to the console
         client.once(Events.ClientReady, readyClient => {

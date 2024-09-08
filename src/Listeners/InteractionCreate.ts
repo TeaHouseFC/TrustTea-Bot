@@ -1,4 +1,5 @@
-import { CommandInteraction, Client, Interaction, ContextMenuCommandBuilder, ApplicationCommandType} from "discord.js";
+import {CommandInteraction, Client, Interaction, ContextMenuCommandBuilder, ApplicationCommandType,
+} from "discord.js";
 import {CommandsList} from "../Handler/Command.ts";
 
 // Initialises the menu of commands to be displayed to user when right click or tapping on a user
@@ -36,7 +37,6 @@ const HandleSlashCommand = async (client: Client, interaction: CommandInteractio
     }
 
     // Get Id of person who executed the command and the guild
-    // Placeholder for now
     let executor: {userId: string, guildId: string} = {userId: "0" , guildId: "0"};
 
     if (interaction.user.id && interaction.guildId) {

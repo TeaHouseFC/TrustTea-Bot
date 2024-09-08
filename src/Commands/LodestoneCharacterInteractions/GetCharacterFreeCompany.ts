@@ -1,5 +1,5 @@
 import {Executor, SubCommand} from "../../Handler/Command.ts";
-import {Client, CommandInteraction, Interaction, SlashCommandSubcommandBuilder} from "discord.js";
+import {Client, CommandInteraction, SlashCommandSubcommandBuilder} from "discord.js";
 import {GetLodestoneFreeCompany} from "../../Helpers/LodestoneHelpers.ts";
 
 

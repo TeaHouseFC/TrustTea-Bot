@@ -1,7 +1,8 @@
-import {Client, REST, Routes} from "discord.js";
+import {Client, REST} from "discord.js";
 import {CommandsList} from "../Handler/Command.ts";
 const dotenv = require("dotenv").config();
 
+//TODO Tidy
 export async function Startup(client : Client) {
     console.log("start refreshing application (/) commands.");
     let token = process.env.DISCORD_TOKEN;
@@ -26,10 +27,6 @@ export async function Startup(client : Client) {
         let error = JSON.stringify(err, null, 2);
         throw Error(error);
     }
-}
-
-export async function EstablishDatabaseConnection() {
-    // Establish database connection here
 }
 
 

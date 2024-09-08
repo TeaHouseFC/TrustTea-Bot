@@ -1,5 +1,5 @@
 import {CommandInteraction, Client, SlashCommandBuilder, SlashCommandSubcommandBuilder} from "discord.js";
-import {Executor, PrimaryCommand, SubCommand} from "../../Handler/Command.ts";
+import {Executor, SubCommand} from "../../Handler/Command.ts";
 
 export const Ping: SubCommand = {
     data: new SlashCommandSubcommandBuilder()

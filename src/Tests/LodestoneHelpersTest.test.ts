@@ -1,6 +1,5 @@
 import {expect, test} from "bun:test"
 import * as LodestoneHelpers from "../Helpers/LodestoneHelpers"
-import {FCMemberList} from "../Helpers/LodestoneHelpers";
 // Test Parameters To Expect Returned FC/Character Id
 const ReturnedFirstName = "Art"
 const ReturnedLastName = "Bayard"
@@ -29,3 +28,5 @@ test('Call LodestoneHelpers GetFreeCompamnyMembers', async() => {
     }
     expect(success).toBe(true);
 });
+
+// TODO Add more tests
