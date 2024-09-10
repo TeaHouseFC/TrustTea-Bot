@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import {CheerioAPI} from "cheerio";
-import {LodestoneFCMember, LodestoneFCMemberList, ServiceResult} from "../Types/GenericInterfaces.ts";
+import {LodestoneFCMember, LodestoneFCMemberList, ServiceResult} from "../Types/GenericInterfaces";
 
 // Responsible for interactions directly with the lodestone
 

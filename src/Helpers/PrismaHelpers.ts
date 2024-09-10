@@ -62,7 +62,7 @@ export function StoreFCGuildParameters(guildId: string, memberRoleId: string, ad
     });
 }
 
-export function GetFCGuildParameters(guildId: string): Promise<FCGuildParameters> {
+export function GetFCGuildParametersByGuildId(guildId: string): Promise<FCGuildParameters> {
     return new Promise<FCGuildParameters>(async (resolve, reject) => {
         try {
             const prisma = new PrismaClient();
@@ -100,6 +100,36 @@ export function GetFCGuildParameters(guildId: string): Promise<FCGuildParameters
             resolve(fcGuildParameters);
         } catch (err) {
             reject({ success: false, value: `Error getting Guild Config: ${err}` });
+        }
+    });
+}
+
+export function GetFCGuildParameters(): Promise<FCGuildParameters[]> {
+    return new Promise<FCGuildParameters[]>(async (resolve, reject) => {
+        try {
+            const prisma = new PrismaClient();
+            const guildConfigs = await prisma.fCGuildServer.findMany();
+
+            let guilds: FCGuildParameters[] = [];
+            if (guildConfigs) {
+                for (let guildConfig of guildConfigs) {
+                    let guildRoles = await prisma.fCGuildRole.findMany({
+                        where: {
+                            DiscordGuildUid: guildConfig.DiscordGuildUid
+                        }
+                    });
+                    guilds.push({
+                        Id: guildConfig.Id,
+                        DiscordGuildUid: guildConfig.DiscordGuildUid,
+                        FreeCompanyId: guildConfig.FreeCompanyId,
+                        DateCreated: guildConfig.DateCreated,
+                        Roles: guildRoles
+                    });
+                }
+            }
+            resolve(guilds);
+        } catch (err) {
+            reject({ success: false, value: `Error getting Guilds: ${err}` });
         }
     });
 }

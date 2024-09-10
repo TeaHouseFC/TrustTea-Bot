@@ -2,8 +2,8 @@ import {Client, CommandInteraction, SlashCommandSubcommandBuilder} from "discord
 import { SubCommand} from "../../Handler/Command.ts";
 import {GetLodestoneFreeCompanyMembers} from "../../Helpers/LodestoneHelpers.ts";
 import {CalculateUnverifiedDiscordMembers, CreateUnverifiedFCMember, CreateVerifiedFCMember, MatchDiscordMemberToFCMember, PrepareMembersToStore, PrepareNameHistoryToStore
-} from "../../Helpers/DiscordHelpers.ts";
-import {GetFCGuildParameters, StoreFCMembersAndNameHistory} from "../../Helpers/PrismaHelpers.ts";
+} from "../../Helpers/GuildMemberHelpers.ts";
+import {GetFCGuildParametersByGuildId, StoreFCMembersAndNameHistory} from "../../Helpers/PrismaHelpers.ts";
 import {FCMemberNotVerified, VerifiedFCMember} from "../../Types/GenericInterfaces.ts";
 
 export const RegisterFCMembers: SubCommand = {
@@ -21,7 +21,7 @@ export const RegisterFCMembers: SubCommand = {
 
                 // Get Guild Parameters from Database using GuildId from Interaction
                 let guildId = interaction.guildId;
-                let guildResult = await GetFCGuildParameters(guildId);
+                let guildResult = await GetFCGuildParametersByGuildId(guildId);
 
                 if (guildResult == null || guildResult.DiscordGuildUid === "0") {
                     await interaction.editReply({content: "Error: Guild not registered, please use /registerguildsettings first"});
